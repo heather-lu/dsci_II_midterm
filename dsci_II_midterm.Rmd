@@ -19,15 +19,33 @@ library(corrplot)
 library(ggplot2)        
 ```
 
-# Load data & EDA
+# Load data
 ```{r}
-# load data 
 load("datA.RData")
 str(datA)
 sum(is.na(datA))
 
-# check outcome distribution 
-hist(datA$log_PFS, main = "Distribution of Log_PFS", xlab = "log_PFS")
+# fix variable types
+datA <- datA |> 
+  mutate(
+    menopause = as.factor(menopause),
+    race = as.factor(race),
+    tumor_grade = as.factor(tumor_grade),
+    ER = as.factor(ER),
+    PR = as.factor(PR),
+    HER2 = as.factor(HER2),
+    stage = as.factor(stage),
+    surgery = as.factor(surgery),
+    chemo = as.factor(chemo),
+    hormonal_therapy = as.factor(hormonal_therapy)
+  )
 ```
 
+# EDA
+
+```{r}
+# check outcome distribution 
+hist(datA$log_PFS, main = "Distribution of Log_PFS", xlab = "log_PFS")
+
+```
 
