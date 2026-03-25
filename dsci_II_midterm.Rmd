@@ -93,8 +93,27 @@ ols_fit <- train(log_PFS ~. - id,
 
 summary(ols_fit)
 ```
+OLS results: 
+
+- tumor_size: negative effect, larger tumors -> shorter PFS
+
+- tumor_grade3: negative, poorly differentiated tumors -> shorter PFS
+
+- lymph_nodes: negative, more positive nodes -> shorter PFS
+
+- ER1: positive, ER positive -> longer PFS
+
+- HER21: negative, HER2 positive -> shorter PFS
+
+- hormonal_therapy1: positive, hormonal therapy -> longer PFS
+
+- age, bmi, menopause, race, PR, stage, surgery, chemo not significant in OLS
+
+- Adjusted R² = 0.20 : the model explains about 20% of variance in log PFS
+
 # Ridge 
 ```{r}
+set.seed(67)
 ridge_fit <- train(log_PFS ~ . - id,
                    data = training_data,
                    method = "glmnet",
@@ -106,4 +125,57 @@ plot(ridge_fit, xTrans = log)
 
 ridge_fit$bestTune
 ```
+optimal lambda is 0.125, small penalty. makes sense given we don't have severe multicollinearity, we don't need to shrink too much.
 
+# LASSO
+```{r}
+set.seed(67)
+lasso_fit <- train(log_PFS ~ . - id,
+                   data = training_data,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 1,
+                                          lambda = exp(seq(4, -10, length=100))),
+                   trControl = ctrl1)
+
+plot(lasso_fit, xTrans = log)
+
+lasso_fit$bestTune
+
+coef(lasso_fit$finalModel, s = lasso_fit$bestTune$lambda)
+```
+LASSO dropped menopause, bmi, tumor_grade2, PR, stage3, surgery, chemo but kept age, race4, tumor_size, tumor_grade3, lymph_nodes, ER1, HER21, Ki67, stage2, hormonal_therapy1, race3. both lymph_nodes and tumor_size were kept, but shrunken compared to OLS.
+
+# Elastic net
+
+```{r}
+set.seed(67)
+enet_fit <- train(log_PFS ~ . - id,
+                   data = training_data,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = seq(0, 1, length = 21),
+                                          lambda = exp(seq(4, -10, length=100))),
+                   trControl = ctrl1)
+
+enet_fit$bestTune
+```
+enet_fit best tuning parameters yielded alpha = 0.35, lambda = 0.0172. Model is leaning more toward ridge than lasso, which makes sense given the correlation between tumor_size and lymph_nodes. It's using the ridge component to handle those correlated predictors.
+
+# GAM
+```{r}
+set.seed(67)
+
+gam_fit <- train(log_PFS ~ . - id,
+                 data = training_data,
+                 method = "gam",
+                 trControl = ctrl1)
+
+gam_fit$bestTune
+gam_fit$finalModel
+```
+- Applied smooth terms s() to the continuous predictors: lymph_nodes, tumor_size, bmi, Ki67, age
+
+- s(Ki67) has edf = 4.32 — most nonlinear, suggesting Ki67 has a notably nonlinear relationship with log PFS
+
+- s(lymph_nodes) edf = 1.44 and s(tumor_size) edf = 1.38 — close to 1, meaning nearly linear
+
+s(bmi) and s(age) edf = 1.00 — essentially linear, no nonlinearity detected
