@@ -19,8 +19,7 @@ library(corrplot)
 library(ggplot2)        
 ```
 
-# Load data
-```{r}
+```{r, include=FALSE}
 load("datA.RData")
 str(datA)
 sum(is.na(datA))
@@ -28,24 +27,43 @@ sum(is.na(datA))
 # fix variable types
 datA <- datA |> 
   mutate(
-    menopause = as.factor(menopause),
-    race = as.factor(race),
-    tumor_grade = as.factor(tumor_grade),
-    ER = as.factor(ER),
-    PR = as.factor(PR),
-    HER2 = as.factor(HER2),
-    stage = as.factor(stage),
-    surgery = as.factor(surgery),
-    chemo = as.factor(chemo),
-    hormonal_therapy = as.factor(hormonal_therapy)
+    menopause = as.factor(menopause), # 0 = Pre-menopausal, 1 = Post-menopausal
+    race = as.factor(race), # 1 = White, 2 = Black, 3 = Asian, 4 = Hispanic 
+    tumor_grade = as.factor(tumor_grade), # 1 = Well differentiated, 2 = Moderately differentiated, 3 = Poorly differentiated
+    ER = as.factor(ER), # 0 = Negative, 1 = Positive 
+    PR = as.factor(PR), # 0 = Negative, 1 = Positive
+    HER2 = as.factor(HER2), # 0 = Negative, 1 = Positive
+    stage = as.factor(stage), # 1 = Stage I, 2 = Stage II, 3 = Stage III
+    surgery = as.factor(surgery), # 0 = Breast-conserving surgery, 1 = Mastectomy
+    chemo = as.factor(chemo), # 0 = No, 1 = Yes
+    hormonal_therapy = as.factor(hormonal_therapy) # 0 = No, 1 = Yes
   )
 ```
+# Main Text
 
-# EDA
+## Introduction / Background
+...
+
+## Methods
+
+
+## Results
+...
+
+# Appendix
 
 ```{r}
 # check outcome distribution 
-hist(datA$log_PFS, main = "Distribution of Log_PFS", xlab = "log_PFS")
-
+hist(datA$log_PFS, main = "Distribution of log_PFS", xlab = "log_PFS")
 ```
+*Figure 1. Distribution of log_PFS.*
 
+```{r}
+datA |> 
+  select(age, bmi, tumor_size, lymph_nodes, Ki67) |> 
+  cor() |> 
+  corrplot(method = "number")
+```
+*Figure 2. Correlation matrix of continuous predictors in Dataset A.*
+
+From the correlation plot, it seems that lymph_nodes and tumor_size has a moderate positive correlation r = 0.71 , which makes sense in a clinical context. Everything else seems largely uncorrelated; there is no severe multicollinearity, OLS shouldn't be too unstable. The mild correlation between lymph_nodes and tumor_size may result in one predictor being dropped by LASSO, so elastic net might be preferred here. 
