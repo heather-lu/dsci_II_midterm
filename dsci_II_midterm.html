@@ -693,6 +693,30 @@ identical RMSE to enet.</p>
 </div>
 <div id="prediction" class="section level1">
 <h1>prediction</h1>
+<pre class="r"><code>lasso_pred &lt;- predict(lasso_fit, newdata = testing_data)
+
+# test RMSE
+sqrt(mean((lasso_pred - testing_data$log_PFS)^2))</code></pre>
+<pre><code>## [1] 0.6841792</code></pre>
+<pre class="r"><code>#R^2
+cor(lasso_pred, testing_data$log_PFS)^2</code></pre>
+<pre><code>## [1] 0.1900497</code></pre>
+<p>test RMSE = 0.68, slightly lower than CV RMSE = 0.706.</p>
+<ul>
+<li><p>6 models trained and compared via 10-fold CV</p></li>
+<li><p>No significant differences between models</p></li>
+<li><p>Lasso selected as final model due to parsimony and
+interpretability</p></li>
+<li><p>Test RMSE = 0.684</p></li>
+<li><p>lasso model explains about 19% of variance in log PFS on the test
+set, consistent with the training CV R^2 of 0.20, which is a good sign
+that the model is not overfitting.</p></li>
+<li><p>final model: Lasso with lambda = 0.015, CV RMSE = 0.707, Test
+RMSE = 0.684, test R^2 = 0.190</p></li>
+</ul>
+</div>
+<div id="part-ii" class="section level1">
+<h1>Part II</h1>
 </div>
 
 

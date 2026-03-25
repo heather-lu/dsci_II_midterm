@@ -27,6 +27,7 @@ sum(is.na(datA))
 
 # fix variable types
 datA <- datA |> 
+  select(-id) |> 
   mutate(
     menopause = as.factor(menopause), # 0 = Pre-menopausal, 1 = Post-menopausal
     race = as.factor(race), # 1 = White, 2 = Black, 3 = Asian, 4 = Hispanic 
@@ -40,8 +41,6 @@ datA <- datA |>
     hormonal_therapy = as.factor(hormonal_therapy) # 0 = No, 1 = Yes
   )
 
-#drop ID
-datA <- datA |> select(-id)
 ```
 # Main Text
 
@@ -240,6 +239,30 @@ no model is significantly better than any other,the differences in RMSE are not 
 
 # prediction
 ```{r}
+lasso_pred <- predict(lasso_fit, newdata = testing_data)
 
+# test RMSE
+sqrt(mean((lasso_pred - testing_data$log_PFS)^2))
+
+#R^2
+cor(lasso_pred, testing_data$log_PFS)^2
 ```
+
+test RMSE = 0.68, slightly lower than CV RMSE = 0.706. 
+
+- 6 models trained and compared via 10-fold CV
+
+- No significant differences between models
+
+- Lasso selected as final model due to parsimony and interpretability
+
+- Test RMSE = 0.684
+
+- lasso model explains about 19% of variance in log PFS on the test set, consistent with the training CV R^2 of 0.20, which is a good sign that the model is not overfitting.
+
+- final model: Lasso with lambda = 0.015, CV RMSE = 0.707, Test RMSE = 0.684,
+test R^2 = 0.190
+
+# Part II
+
 
