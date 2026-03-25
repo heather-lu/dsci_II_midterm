@@ -179,3 +179,22 @@ gam_fit$finalModel
 - s(lymph_nodes) edf = 1.44 and s(tumor_size) edf = 1.38 — close to 1, meaning nearly linear
 
 s(bmi) and s(age) edf = 1.00 — essentially linear, no nonlinearity detected
+
+# MARS
+
+```{r}
+mars_grid <- expand.grid(degree = 1:3, 
+                         nprune = 2:15)
+
+mars_fit <- train(log_PFS ~ . - id,
+                 data = training_data,
+                 method = "earth",
+                 tuneGrid = mars_grid,
+                 trControl = ctrl1)
+ggplot(mars_fit)
+
+mars_fit$bestTune
+
+coef(mars_fit$finalModel) 
+```
+
