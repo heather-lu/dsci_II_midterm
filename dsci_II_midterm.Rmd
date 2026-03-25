@@ -17,7 +17,8 @@ library(randomForest)
 library(gbm)            
 library(gtsummary)      
 library(corrplot)       
-library(ggplot2)        
+library(ggplot2)    
+library(knitr)
 ```
 
 # Load Data
@@ -315,6 +316,8 @@ lasso_fitB <- train(log_PFS ~ ., data = training_dataB, method = "glmnet",
                     tuneGrid = expand.grid(alpha = 1, lambda = exp(seq(4, -10, length = 100))),
                     trControl = ctrl1)
 
+plot(lasso_fitB, xTrans = log)
+
 # Elastic net
 set.seed(67)
 enet_fitB <- train(log_PFS ~ ., data = training_dataB, method = "glmnet",
@@ -376,12 +379,14 @@ coef_table <- cbind(coef_A, coef_B)
 colnames(coef_table) <- c("datA (1990-95)", "datB (2000-05)")
 
 coef_table
+
+kable(coef_table, digits = 3, caption = "Table 1. Lasso coefficients from datA and datB models")
 ```
 Changes 
-- HER2 flipped from negative to positive. In the 1990s cohort HER2 positive was associated with worse PFS, but in the 2000s cohort it became slightly positive. This is interesting as HER2+ is no longer a poor prognostic factor 
+- HER2 flipped from negative to positive. In the 1990s cohort HER2 positive was associated with worse PFS, but in the 2000s cohort it became slightly positive. HER2+ is no longer a poor prognostic factor. 
 
-- Hormonal therapy effect strengthened: coefficient grew from 0.134 to 0.202, suggesting hormonal therapy became more effective or more appropriately prescribed in the later cohort.
+- Hormonal therapy effect strengthened: coefficient grew from 0.134 to 0.202, suggesting hormonal therapy became more effective or more appropriately prescribed.
 
-- Lymph nodes effect weakened — from -0.062 to -0.030, possibly reflecting improvements in surgical and systemic treatment.
+- Lymph nodes effect weakened — from -0.062 to -0.030, potentially better treatments
 
 - More variables retained in datB — suggesting the later cohort has more complex predictive relationships.
