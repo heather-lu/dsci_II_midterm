@@ -8,7 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)      
-library(caret)          
+library(caret)
+library(tidymodels)
 library(glmnet)         
 library(mgcv)           
 library(earth)          
@@ -52,6 +53,7 @@ datA <- datA |>
 
 # Appendix
 
+# Load Data + EDA
 ```{r}
 # check outcome distribution 
 hist(datA$log_PFS, main = "Distribution of log_PFS", xlab = "log_PFS")
@@ -67,3 +69,22 @@ datA |>
 *Figure 2. Correlation matrix of continuous predictors in Dataset A.*
 
 From the correlation plot, it seems that lymph_nodes and tumor_size has a moderate positive correlation r = 0.71 , which makes sense in a clinical context. Everything else seems largely uncorrelated; there is no severe multicollinearity, OLS shouldn't be too unstable. The mild correlation between lymph_nodes and tumor_size may result in one predictor being dropped by LASSO, so elastic net might be preferred here. 
+
+# Train test split + model building 
+```{r}
+# train test split
+set.seed(67)
+data_split <- initial_split(datA, prop = 0.8)
+training_data <- training(data_split)
+testing_data <- testing(data_split)
+
+# train control object
+ctrl1 <- trainControl(method = "cv", number = 10, savePredictions = TRUE)
+```
+# OLS
+
+```{r}
+set.seed(67)
+
+```
+
