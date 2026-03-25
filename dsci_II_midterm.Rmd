@@ -81,10 +81,29 @@ testing_data <- testing(data_split)
 # train control object
 ctrl1 <- trainControl(method = "cv", number = 10, savePredictions = TRUE)
 ```
-# OLS
 
+# OLS
 ```{r}
 set.seed(67)
 
+ols_fit <- train(log_PFS ~. - id,
+                 data = training_data,
+                 method = "lm",
+                 trControl = ctrl1)
+
+summary(ols_fit)
+```
+# Ridge 
+```{r}
+ridge_fit <- train(log_PFS ~ . - id,
+                   data = training_data,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 0,
+                                          lambda = exp(seq(6, -4, length=100))),
+                   trControl = ctrl1)
+
+plot(ridge_fit, xTrans = log)
+
+ridge_fit$bestTune
 ```
 
