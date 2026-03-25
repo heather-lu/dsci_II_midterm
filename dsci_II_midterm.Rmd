@@ -1,0 +1,33 @@
+---
+title: "dsci_II_project"
+author: "Heather Lu"
+date: "2026-03-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)      
+library(caret)          
+library(glmnet)         
+library(mgcv)           
+library(earth)          
+library(randomForest)   
+library(gbm)            
+library(gtsummary)      
+library(corrplot)       
+library(ggplot2)        
+```
+
+# Load data & EDA
+```{r}
+# load data 
+load("datA.RData")
+str(datA)
+sum(is.na(datA))
+
+# check outcome distribution 
+hist(datA$log_PFS, main = "Distribution of Log_PFS", xlab = "log_PFS")
+```
+
+
