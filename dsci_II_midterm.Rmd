@@ -39,6 +39,9 @@ datA <- datA |>
     chemo = as.factor(chemo), # 0 = No, 1 = Yes
     hormonal_therapy = as.factor(hormonal_therapy) # 0 = No, 1 = Yes
   )
+
+#drop ID
+datA <- datA |> select(-id)
 ```
 # Main Text
 
@@ -86,7 +89,7 @@ ctrl1 <- trainControl(method = "cv", number = 10, savePredictions = TRUE)
 ```{r}
 set.seed(67)
 
-ols_fit <- train(log_PFS ~. - id,
+ols_fit <- train(log_PFS ~.,
                  data = training_data,
                  method = "lm",
                  trControl = ctrl1)
@@ -114,7 +117,7 @@ OLS results:
 # Ridge 
 ```{r}
 set.seed(67)
-ridge_fit <- train(log_PFS ~ . - id,
+ridge_fit <- train(log_PFS ~ .,
                    data = training_data,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 0,
@@ -130,7 +133,7 @@ optimal lambda is 0.125, small penalty. makes sense given we don't have severe m
 # LASSO
 ```{r}
 set.seed(67)
-lasso_fit <- train(log_PFS ~ . - id,
+lasso_fit <- train(log_PFS ~ .,
                    data = training_data,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 1,
@@ -149,7 +152,7 @@ LASSO dropped menopause, bmi, tumor_grade2, PR, stage3, surgery, chemo but kept 
 
 ```{r}
 set.seed(67)
-enet_fit <- train(log_PFS ~ . - id,
+enet_fit <- train(log_PFS ~ .,
                    data = training_data,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = seq(0, 1, length = 21),
@@ -164,7 +167,7 @@ enet_fit best tuning parameters yielded alpha = 0.35, lambda = 0.0172. Model is 
 ```{r}
 set.seed(67)
 
-gam_fit <- train(log_PFS ~ . - id,
+gam_fit <- train(log_PFS ~ .,
                  data = training_data,
                  method = "gam",
                  trControl = ctrl1)
@@ -181,12 +184,13 @@ gam_fit$finalModel
 s(bmi) and s(age) edf = 1.00 — essentially linear, no nonlinearity detected
 
 # MARS
-
 ```{r}
+set.seed(67)
+
 mars_grid <- expand.grid(degree = 1:3, 
                          nprune = 2:15)
 
-mars_fit <- train(log_PFS ~ . - id,
+mars_fit <- train(log_PFS ~ .,
                  data = training_data,
                  method = "earth",
                  tuneGrid = mars_grid,
@@ -196,5 +200,46 @@ ggplot(mars_fit)
 mars_fit$bestTune
 
 coef(mars_fit$finalModel) 
+```
+- degree = 1, no interactions needed
+
+- optimal at nprune = 11
+
+hinge functions: 
+- h(8 - lymph_nodes) — effect of lymph nodes below 8
+
+- h(tumor_size - 1.3) and h(1.3 - tumor_size) together — piecewise effect around tumor size = 1.3cm, a knot/breakpoint
+
+- h(39 - Ki67) — effect of Ki67 below 39%
+
+- h(23.1 - bmi) and h(bmi - 35.7) — nonlinear BMI effects at two breakpoints
+
+- ER1, HER21, hormonal_therapy1 — linear terms
+
+- h(tumor_size - 0.4) — another tumor size hinge
+
+MARS confirms nonlinear effects for Ki67 and tumor size, consistent with the GAM findings. 
+
+# resamples 
+
+```{r}
+set.seed(67)
+
+resamp <- resamples(list(enet = enet_fit, ols = ols_fit, lasso = lasso_fit, rdige = ridge_fit, gam = gam_fit, mars = mars_fit))
+
+summary(resamp)
+
+parallelplot(resamp, metric = "RMSE")
+
+bwplot(resamp, metric = "RMSE")
+```
+
+GAM has lowest median CV RMSE, followed by enet and lasso. All models overlap, differences are not significant. enet has one outlier fold and performed identically to LASSO, indicating the ridge component didn't change much. GAM captures the non-linear effects of Ki67 and tumor size, could potentially the best model. However, GAM is less interpretable, and the goal of the project is to understand how demographic, tumor, and treatment characteristics influence progression-free survival in breast cancer patients. 
+
+no model is significantly better than any other,the differences in RMSE are not statistically significant. We will decide to go with LASSO over enet, since it only has 1 tuning parameter, no outliers and identical RMSE to enet.
+
+# prediction
+```{r}
+
 ```
 
