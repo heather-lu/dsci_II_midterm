@@ -277,7 +277,7 @@ MARS confirms nonlinear effects for Ki67 and tumor size, consistent with the GAM
 ```{r}
 set.seed(67)
 
-resamp <- resamples(list(enet = enet_fit, ols = ols_fit, lasso = lasso_fit, rdige = ridge_fit, gam = gam_fit, mars = mars_fit))
+resamp <- resamples(list(enet = enet_fit, ols = ols_fit, lasso = lasso_fit, ridge = ridge_fit, gam = gam_fit, mars = mars_fit))
 
 summary(resamp)
 
