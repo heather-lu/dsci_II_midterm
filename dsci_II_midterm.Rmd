@@ -2,7 +2,10 @@
 title: "dsci_II_project"
 author: "Heather Lu"
 date: "2026-03-25"
-output: html_document
+output:
+  html_document: default
+  pdf_document:
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -45,7 +48,30 @@ datA <- datA |>
 
 # Table Summary datA
 ```{r}
-table_a <- datA |> 
+# labeled version for Table 1 only
+datA_labeled <- datA |>
+  mutate(
+    menopause = factor(menopause, levels = c(0,1), 
+                       labels = c("Pre-menopausal", "Post-menopausal")),
+    race = factor(race, levels = c(1,2,3,4), 
+                  labels = c("White", "Black", "Asian", "Hispanic")),
+    tumor_grade = factor(tumor_grade, levels = c(1,2,3), 
+                         labels = c("Well differentiated", 
+                                    "Moderately differentiated", 
+                                    "Poorly differentiated")),
+    ER = factor(ER, levels = c(0,1), labels = c("Negative", "Positive")),
+    PR = factor(PR, levels = c(0,1), labels = c("Negative", "Positive")),
+    HER2 = factor(HER2, levels = c(0,1), labels = c("Negative", "Positive")),
+    stage = factor(stage, levels = c(1,2,3), 
+                   labels = c("Stage I", "Stage II", "Stage III")),
+    surgery = factor(surgery, levels = c(0,1), 
+                     labels = c("Breast-conserving", "Mastectomy")),
+    chemo = factor(chemo, levels = c(0,1), labels = c("No", "Yes")),
+    hormonal_therapy = factor(hormonal_therapy, levels = c(0,1), 
+                              labels = c("No", "Yes"))
+  )
+
+table_a <- datA_labeled |> 
   select(-log_PFS) |>
   tbl_summary(
     label = list(
@@ -75,7 +101,7 @@ table_a <- datA |>
     )
   ) |> 
   modify_header(label = "**Characteristic**") |>
-  modify_caption("**Table 1. Baseline characteristics of datA (1990–1995 cohort, n=2000)**") |>
+  modify_caption("**Table 1. Baseline characteristics of datA (1990-1995 cohort, n=2000)**") |>
   bold_labels()
 
 table_a
@@ -138,7 +164,7 @@ OLS results:
 
 - age, bmi, menopause, race, PR, stage, surgery, chemo not significant in OLS
 
-- Adjusted R² = 0.20 : the model explains about 20% of variance in log PFS
+- Adjusted R^2 = 0.20 : the model explains about 20% of variance in log PFS
 
 # Ridge 
 ```{r}
@@ -203,11 +229,11 @@ gam_fit$finalModel
 ```
 - Applied smooth terms s() to the continuous predictors: lymph_nodes, tumor_size, bmi, Ki67, age
 
-- s(Ki67) has edf = 4.32 — most nonlinear, suggesting Ki67 has a notably nonlinear relationship with log PFS
+- s(Ki67) has edf = 4.32 - most nonlinear, suggesting Ki67 has a notably nonlinear relationship with log PFS
 
-- s(lymph_nodes) edf = 1.44 and s(tumor_size) edf = 1.38 — close to 1, meaning nearly linear
+- s(lymph_nodes) edf = 1.44 and s(tumor_size) edf = 1.38 - close to 1, meaning nearly linear
 
-s(bmi) and s(age) edf = 1.00 — essentially linear, no nonlinearity detected
+s(bmi) and s(age) edf = 1.00 - essentially linear, no nonlinearity detected
 
 # MARS
 ```{r}
@@ -232,17 +258,17 @@ coef(mars_fit$finalModel)
 - optimal at nprune = 11
 
 hinge functions: 
-- h(8 - lymph_nodes) — effect of lymph nodes below 8
+- h(8 - lymph_nodes) - effect of lymph nodes below 8
 
-- h(tumor_size - 1.3) and h(1.3 - tumor_size) together — piecewise effect around tumor size = 1.3cm, a knot/breakpoint
+- h(tumor_size - 1.3) and h(1.3 - tumor_size) together - piecewise effect around tumor size = 1.3cm, a knot/breakpoint
 
-- h(39 - Ki67) — effect of Ki67 below 39%
+- h(39 - Ki67) - effect of Ki67 below 39%
 
-- h(23.1 - bmi) and h(bmi - 35.7) — nonlinear BMI effects at two breakpoints
+- h(23.1 - bmi) and h(bmi - 35.7) - nonlinear BMI effects at two breakpoints
 
-- ER1, HER21, hormonal_therapy1 — linear terms
+- ER1, HER21, hormonal_therapy1 - linear terms
 
-- h(tumor_size - 0.4) — another tumor size hinge
+- h(tumor_size - 0.4) - another tumor size hinge
 
 MARS confirms nonlinear effects for Ki67 and tumor size, consistent with the GAM findings. 
 
@@ -278,6 +304,10 @@ kable(cv_table,
 GAM has lowest median CV RMSE, followed by enet and lasso. All models overlap, differences are not significant. enet has one outlier fold and performed identically to LASSO, indicating the ridge component didn't change much. GAM captures the non-linear effects of Ki67 and tumor size, could potentially the best model. However, GAM is less interpretable, and the goal of the project is to understand how demographic, tumor, and treatment characteristics influence progression-free survival in breast cancer patients. 
 
 no model is significantly better than any other,the differences in RMSE are not statistically significant. We will decide to go with LASSO over enet, since it only has 1 tuning parameter, no outliers and identical RMSE to enet.
+
+```{r}
+plot(lasso_fit$finalModel)
+```
 
 # prediction
 ```{r}
@@ -329,7 +359,30 @@ datB <- datB |>
 # Comparison of datA and datB
 
 ```{r}
-table_b <- datB |> 
+# labeled version for Table 1 only
+datB_labeled <- datB |>
+  mutate(
+    menopause = factor(menopause, levels = c(0,1), 
+                       labels = c("Pre-menopausal", "Post-menopausal")),
+    race = factor(race, levels = c(1,2,3,4), 
+                  labels = c("White", "Black", "Asian", "Hispanic")),
+    tumor_grade = factor(tumor_grade, levels = c(1,2,3), 
+                         labels = c("Well differentiated", 
+                                    "Moderately differentiated", 
+                                    "Poorly differentiated")),
+    ER = factor(ER, levels = c(0,1), labels = c("Negative", "Positive")),
+    PR = factor(PR, levels = c(0,1), labels = c("Negative", "Positive")),
+    HER2 = factor(HER2, levels = c(0,1), labels = c("Negative", "Positive")),
+    stage = factor(stage, levels = c(1,2,3), 
+                   labels = c("Stage I", "Stage II", "Stage III")),
+    surgery = factor(surgery, levels = c(0,1), 
+                     labels = c("Breast-conserving", "Mastectomy")),
+    chemo = factor(chemo, levels = c(0,1), labels = c("No", "Yes")),
+    hormonal_therapy = factor(hormonal_therapy, levels = c(0,1), 
+                              labels = c("No", "Yes"))
+  )
+
+table_b <- datB_labeled |> 
   select(-log_PFS) |>
   tbl_summary(
     label = list(
@@ -369,7 +422,6 @@ tbl_merge(
 ) |>
   modify_caption("**Table 4. Baseline characteristics of Dataset A and Dataset B**")
 ```
-
 
 # Predict with current LASSO
 ```{r}
@@ -448,6 +500,18 @@ bwplot(resampB, metric = "RMSE")
 
 - All models very close again, we choose to compare LASSO models based on interpretability & consistency 
 
+```{r}
+cv_tableB <- summary(resampB)$statistics$RMSE |>
+  as.data.frame() |>
+  rownames_to_column(var = "Model") |>
+  select(Model, Mean, Min., Max.) |>
+  arrange(Mean)
+
+kable(cv_tableB, digits = 4,
+      col.names = c("Model", "Mean RMSE", "Min RMSE", "Max RMSE"),
+      caption = "Table 5. 10-fold CV RMSE for models fitted on Dataset B")
+```
+
 # New LASSO prediction part II
 ```{r}
 set.seed(67)
@@ -462,8 +526,28 @@ cor(lasso_predB, testing_dataB$log_PFS)^2
 
 coef(lasso_fitB$finalModel, s = lasso_fitB$bestTune$lambda)
 ```
-# coefficient comparison
 
+# comparison table RMSE
+
+```{r}
+performance_table <- data.frame(
+  Model = c("Lasso (Dataset A)", 
+            "Lasso (Dataset A) applied to Dataset B", 
+            "Lasso (Dataset B)"),
+  CV_RMSE = c(0.7069, "-", 0.6749),
+  Test_RMSE = c(0.6842, 0.8293, 0.6674),
+  R2 = c(0.1900, 0.1565, 0.1843)
+)
+
+kable(performance_table,
+      col.names = c("Model", "CV RMSE", "Test RMSE", "R²"),
+      caption = "Table 6. Prediction performance summary",
+      align = c("l", "c", "c", "c"),
+      digits = 4)
+```
+
+
+# coefficient comparison
 ```{r}
 # extract coefficients from both models
 coef_A <- coef(lasso_fit$finalModel, s = lasso_fit$bestTune$lambda) |> 
@@ -480,13 +564,13 @@ colnames(coef_table) <- c("datA (1990-95)", "datB (2000-05)")
 
 coef_table
 
-kable(coef_table, digits = 3, caption = "Table 1. Lasso coefficients from datA and datB models")
+kable(coef_table, digits = 3, caption = "Table 7. Lasso coefficients from datA and datB models")
 ```
 Changes 
 - HER2 flipped from negative to positive. In the 1990s cohort HER2 positive was associated with worse PFS, but in the 2000s cohort it became slightly positive. HER2+ is no longer a poor prognostic factor. 
 
 - Hormonal therapy effect strengthened: coefficient grew from 0.134 to 0.202, suggesting hormonal therapy became more effective or more appropriately prescribed.
 
-- Lymph nodes effect weakened — from -0.062 to -0.030, potentially better treatments
+- Lymph nodes effect weakened - from -0.062 to -0.030, potentially better treatments
 
-- More variables retained in datB — suggesting the later cohort has more complex predictive relationships.
+- More variables retained in datB - suggesting the later cohort has more complex predictive relationships.
