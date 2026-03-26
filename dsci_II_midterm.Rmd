@@ -49,8 +49,9 @@ datA <- datA |>
 ```{r}
 # check outcome distribution 
 hist(datA$log_PFS, main = "Distribution of log_PFS", xlab = "log_PFS")
+
 ```
-*Figure 1. Distribution of log_PFS.*
+*Figure 1\. Distribution of log_PFS.*
 
 ```{r}
 datA |> 
@@ -58,7 +59,7 @@ datA |>
   cor() |> 
   corrplot(method = "number")
 ```
-*Figure 2. Correlation matrix of continuous predictors in Dataset A.*
+*Figure 2\. Correlation matrix of continuous predictors in Dataset A.*
 
 From the correlation plot, it seems that lymph_nodes and tumor_size has a moderate positive correlation r = 0.71 , which makes sense in a clinical context. Everything else seems largely uncorrelated; there is no severe multicollinearity, OLS shouldn't be too unstable. The mild correlation between lymph_nodes and tumor_size may result in one predictor being dropped by LASSO, so elastic net might be preferred here. 
 
