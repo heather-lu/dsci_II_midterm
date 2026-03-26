@@ -31,18 +31,61 @@ sum(is.na(datA))
 datA <- datA |> 
   select(-id) |> 
   mutate(
-    menopause = as.factor(menopause), # 0 = Pre-menopausal, 1 = Post-menopausal
-    race = as.factor(race), # 1 = White, 2 = Black, 3 = Asian, 4 = Hispanic 
-    tumor_grade = as.factor(tumor_grade), # 1 = Well differentiated, 2 = Moderately differentiated, 3 = Poorly differentiated
-    ER = as.factor(ER), # 0 = Negative, 1 = Positive 
-    PR = as.factor(PR), # 0 = Negative, 1 = Positive
-    HER2 = as.factor(HER2), # 0 = Negative, 1 = Positive
-    stage = as.factor(stage), # 1 = Stage I, 2 = Stage II, 3 = Stage III
-    surgery = as.factor(surgery), # 0 = Breast-conserving surgery, 1 = Mastectomy
-    chemo = as.factor(chemo), # 0 = No, 1 = Yes
-    hormonal_therapy = as.factor(hormonal_therapy) # 0 = No, 1 = Yes
+    menopause        = factor(menopause, levels = c(0,1), 
+                              labels = c("Pre-menopausal", "Post-menopausal")),
+    race             = factor(race, levels = c(1,2,3,4), 
+                              labels = c("White", "Black", "Asian", "Hispanic")),
+    tumor_grade      = factor(tumor_grade, levels = c(1,2,3), 
+                              labels = c("Well differentiated", 
+                                         "Moderately differentiated", 
+                                         "Poorly differentiated")),
+    ER               = factor(ER, levels = c(0,1), labels = c("Negative", "Positive")),
+    PR               = factor(PR, levels = c(0,1), labels = c("Negative", "Positive")),
+    HER2             = factor(HER2, levels = c(0,1), labels = c("Negative", "Positive")),
+    stage            = factor(stage, levels = c(1,2,3), 
+                              labels = c("Stage I", "Stage II", "Stage III")),
+    surgery          = factor(surgery, levels = c(0,1), 
+                              labels = c("Breast-conserving", "Mastectomy")),
+    chemo            = factor(chemo, levels = c(0,1), labels = c("No", "Yes")),
+    hormonal_therapy = factor(hormonal_therapy, levels = c(0,1), labels = c("No", "Yes"))
   )
 
+```
+
+# Table Summary datA
+```{r}
+datA |> 
+  select(-log_PFS) |>
+  tbl_summary(
+    label = list(
+      age              ~ "Age at diagnosis (years)",
+      bmi              ~ "BMI (kg/m²)",
+      tumor_size       ~ "Tumor size (cm)",
+      lymph_nodes      ~ "Positive lymph nodes (n)",
+      Ki67             ~ "Ki-67 index (%)",
+      menopause        ~ "Menopausal status",
+      race             ~ "Race/ethnicity",
+      tumor_grade      ~ "Tumor grade",
+      ER               ~ "Estrogen receptor status",
+      PR               ~ "Progesterone receptor status",
+      HER2             ~ "HER2 status",
+      stage            ~ "Clinical stage",
+      surgery          ~ "Surgery type",
+      chemo            ~ "Chemotherapy",
+      hormonal_therapy ~ "Hormonal therapy"
+    ),
+    statistic = list(
+      all_continuous()  ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = list(
+      all_continuous()  ~ 1,
+      all_categorical() ~ c(0, 1)
+    )
+  ) |> 
+  modify_header(label = "**Characteristic**") |>
+  modify_caption("**Table 1. Baseline characteristics of datA (1990–1995 cohort, n=2000)**") |>
+  bold_labels()
 ```
 
 # EDA
